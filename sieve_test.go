@@ -1,6 +1,16 @@
-package main_test
+package main
 
 import (
-	"fmt"
 	"testing"
 )
+
+func BenchmarkComputePrimesTwoD(b *testing.B) {
+	clinesize := 64
+
+	vals, err := GenerateIntegers(100000, clinesize)
+	if err != nil {
+		panic(err)
+	}
+
+	_ = ComputePrimesTwoD(vals, clinesize)
+}
