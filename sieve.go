@@ -2,62 +2,43 @@ package main
 
 import (
 	"errors"
+	"flag"
 	"fmt"
-	"math"
 )
 
-func ConsecutiveIntegers(n int) ([][]bool, error) {
+func GenerateIntegers(n int, clinesize int) ([][]bool, error) {
 	if n < 2 {
-		return nil, errors.New(fmt.Sprintf("%d is less than 2.", n))
+		return nil, errors.New("the maximum integer must be larger than 2")
 	}
 
-	if n < 64 {
-		r := make([][]bool, 1)
-		r[0] = make([]bool, n-2)
-		return r, nil
-	}
+	segcount := n / clinesize
+	rval := make([][]bool, segcount)
 
-	segsize := int(math.Sqrt(float64(n - 2)))
-	segcount := int(math.Ceil(float64(n-2) / float64(segsize)))
-
-	r := make([][]bool, segcount)
 	for i := 0; i < segcount; i++ {
-		r[i] = make([]bool, segsize)
+		rval[i] = make([]bool, clinesize)
 	}
 
-	return r, nil
-}
-
-func SegmentedSieveOfEratosthenes(n int, nlist [][]bool) ([]int, error) {
-	var primes []int
-	var p int
-
-	for i := 0; i < n-2; i++ {
-
-		for j := 0; j < len(nlist); j++ {
-			for k := 0; k < len(nlist[j]); k++ {
-				if nlist[j][k] == false {
-					p = i + 2
-
-					primes = append(primes, p)
-
-					for l := 2; (l * p) < len(nlist)*(j-1)*len(nlist[j-1])+len(nlist[j]); l++ {
-						nlist[j][l*p-2] = true
-					}
-				}
-			}
-		}
-	}
-
-	return primes, nil
+	return rval, nil
 }
 
 func main() {
-	var con, _ = ConsecutiveIntegers(10)
-	var nlist, _ = SegmentedSieveOfEratosthenes(10, con)
+	var n = flag.Int("n", 64, "max integer")
+	var clinesize = flag.Int("cls", 64, "cache line size")
+	var segmented = flag.Bool("segment", false, "segmented sieve, good for larger n's")
+	flag.Parse()
 
-	for i := 0; i < len(nlist); i++ {
-		fmt.Println(nlist[i])
+	if !(*segmented) {
+		clinesize = n
 	}
-	fmt.Printf("%v", con)
+	vals, err := GenerateIntegers(*n, *clinesize)
+	if err != nil {
+		panic(err)
+	}
+
+	err = vals.SimpleCalc()
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Print(vals)
 }
